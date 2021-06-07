@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Grid, Typography } from '@material-ui/core';
-import NumbersList from '../numbersList';
+import Number from '../number';
 import numbersService from '../../resources/services/numbersService';
+import ticketsService from '../../resources/services/ticketsService';
 import { getStatus } from '../../utils/getStatus';
+import FloatingButton from '../floatingButton';
+import ModalConfirm from '../modalConfirm';
+import RegulationDescription from '../regulationDescription';
 
 function getQuantity(numbers, status = '') {
     if(status) {
@@ -12,31 +16,71 @@ function getQuantity(numbers, status = '') {
     }
 }
 
+const CUSTOMER_INITIAL = {
+    name: '',
+    lastname: '',
+    mobilePhone: '',
+}
+
 function Content() {
     const [numbers, setNumbers] = useState({
         ALL: [],
         filtered: [],
     });
+    const [selectedNumbers, setSelectedNumbers] = useState([]);
     const [query, setQuery] = useState('');
+    const [stateModal, setStateModal] = useState(false);
+    const [customer, setCustomer] = useState(CUSTOMER_INITIAL);
+
+    async function getNumbers(){
+        let response = await numbersService.get(query);
+        let dataSource = response.data;
+        setNumbers((prevNumbers) => ({
+            ...prevNumbers,
+            filtered: dataSource,
+        }));
+        response = await numbersService.get();
+        dataSource = response.data;
+        setNumbers((prevNumbers) => ({
+            ...prevNumbers,
+            ALL: dataSource,
+        }));
+    }
     
     useEffect(() => {
-        async function getNumbers(){
-            let response = await numbersService.get(query);
-            let dataSource = response.data;
-            setNumbers((prevNumbers) => ({
-                ...prevNumbers,
-                filtered: dataSource,
-            }));
-            response = await numbersService.get();
-            dataSource = response.data;
-            setNumbers((prevNumbers) => ({
-                ...prevNumbers,
-                ALL: dataSource,
-            }));
-        }
         getNumbers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query]);
+
+    function handleSelectedNumber(number, isSelected) {
+        if (isSelected) {
+            setSelectedNumbers((prevSelectedNumbers) => ([
+                ...prevSelectedNumbers,
+                { ...number },
+            ]));
+        } else {
+            setSelectedNumbers((prevSelectedNumbers) => ([
+                ...prevSelectedNumbers.filter((element) => element.id !== number.id),
+            ]));
+        }
+    }
+
+    async function onFinish() {
+        let ticket = {
+            numbers: selectedNumbers,
+            ...customer,
+        };
+        try {
+            const response = await ticketsService.create(ticket);
+            ticket = response.data;
+            setStateModal(false);
+            setCustomer(CUSTOMER_INITIAL);
+            setSelectedNumbers([]);
+            getNumbers();
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     return (
         <Grid container direction='column'>
@@ -106,40 +150,23 @@ function Content() {
                 </Grid>
             </Grid>
             <Grid item container justify='center' style={{ marginBottom: '120px', borderBottom: '1px solid white', paddingBottom: '16px' }}>
-                <NumbersList numbersList={numbers.filtered} />
+                {numbers.filtered.map((number) => <Number key={number.num} number={number} setNumber={handleSelectedNumber} />)}
             </Grid>
             <Grid item style={{ borderLeft: '1px solid white', paddingLeft: '8px', marginBottom: '24px' }}>
-                <Typography variant='h5' style={{ lineHeight: '64px' }}>
-                    Regulamento/Descrição: Data do Sorteio : 30/10/2021
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold' }}>
-                    Terreno próprio pra construção com tamanho 8mx30m no distrito de Missão 
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold', marginBottom: '24px' }}>
-                    Nova na cidade de Missão Velha ou se preferir o valor de R$ 4.000,00
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold' }}>
-                    Custos cartorial por conta do vencedor. Documentação Particular. Imóvel no zoneamento Rural,
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold' }}>
-                    com água e energia próximo. Fica a 20km da cidade de Juazeiro do Norte, 17km da cidade de Barbalha 
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold', marginBottom: '24px' }}>
-                    e 17 km da cidade de Missão Velha. Acesso asfalto e estrada vicinal.
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px' }}>
-                    O sorteio e Baseado pela Loteria Federal para eliminarmos quaisquer dúvida ou margem para fraude!! 
-                </Typography>
-                <Typography variant='h5' style={{ lineHeight: '24px', maxWidth: '505px', margin: '24px 0px' }}>
-                    Não aceitamos depósitos por envelope ou Doc, somente transferência, pix e TED.
-                </Typography>
-                <Typography variant='body2' style={{ lineHeight: '24px' }}>
-                    Caso não tenha interesse pelo terreno podemos viabilizar o pagamento em dinheiro, valor de R$ 4.000,00,
-                </Typography> 
-                <Typography variant='body2' style={{ lineHeight: '24px' }}>
-                    pagamento em até 72 horas após o sorteio e mediante depósito bancário via TED ou PIX no nome do vencedor. 
-                </Typography>   
+                <RegulationDescription /> 
             </Grid>
+            {selectedNumbers.length > 0 && <FloatingButton onFinish={() => setStateModal(true)} />}
+            <ModalConfirm 
+                title='Confirma número(s)'
+                content={`Números selecionados: ${
+                    selectedNumbers.map((element) => element.num).join(', ')}
+                `}
+                stateModal={stateModal} 
+                setStateModal={setStateModal} 
+                customer={customer}
+                setCustomer={setCustomer}
+                onFinish={onFinish}
+            />   
         </Grid>
     );
 }
