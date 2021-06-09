@@ -13,20 +13,12 @@ function ModalConfirm({
     setStateModal, 
     title, 
     content, 
-    onFinish, 
+    onSearch, 
     setCustomer, 
     customer, 
     loading,
 }) {
   const [error, setError] = useState({
-    name: {
-        open: false,
-        message: 'Nome obrigatório'
-    },
-    lastName: {
-        open: false,
-        message: 'Sobrenome obrigatório'
-    },
     mobilePhone: {
         open: false,
         message: 'Celular obrigatório'
@@ -34,45 +26,8 @@ function ModalConfirm({
   });
 
   useEffect(() => {
-    if (!customer.name) {
-      setError((prevError) => ({
-        ...prevError,
-        name: {
-          ...prevError.name,
-          open: true,
-        }
-      }))
-    } else {
-      setError((prevError) => ({
-        ...prevError,
-        name: {
-          ...prevError.name,
-          open: false,
-        }
-      }))
-    }
-
-    if (!customer.lastName) {
-      setError((prevError) => ({
-        ...prevError,
-        lastName: {
-          ...prevError.lastName,
-          open: true,
-        }
-      }))
-    } else {
-      setError((prevError) => ({
-        ...prevError,
-        lastName: {
-          ...prevError.lastName,
-          open: false,
-        }
-      }))
-    }
-    
     if (!customer.mobilePhone) {
       setError((prevError) => ({
-        ...prevError,
         mobilePhone: {
           ...prevError.mobilePhone,
           open: true,
@@ -80,20 +35,19 @@ function ModalConfirm({
       }))
     } else {
       setError((prevError) => ({
-        ...prevError,
         mobilePhone: {
           ...prevError.mobilePhone,
           open: false,
         }
       }))
     }
-  }, [customer.name, customer.lastName, customer.mobilePhone]);
+  }, [customer.mobilePhone]);
 
   const handleClose = () => {
     setStateModal((prevStateModal) => ({
-      ...prevStateModal,
-      modalConfirm: false,
-    }));
+        ...prevStateModal,
+        modalSearch: false,
+      }));
   };
 
   return (
@@ -101,44 +55,10 @@ function ModalConfirm({
       <Dialog open={stateModal} onClose={handleClose} aria-labelledby='form-dialog-title'>
         <DialogTitle id='form-dialog-title'>{title}</DialogTitle>
         <DialogContent>
-          {content.map((text, index) => 
-            <DialogContentText key={index}>
-              {text}
-            </DialogContentText>
-          )}
-            
+          <DialogContentText>
+            {content}
+          </DialogContentText>
           <TextField
-            autoFocus
-            margin='dense'
-            id='name'
-            label='Nome'
-            fullWidth
-            autoComplete='off'
-            value={customer.name}
-            onChange={(event) => setCustomer((prevCustomer) => ({
-              ...prevCustomer,
-              name: event.target.value,
-            }))}
-            required
-            error={error.name.open}
-            helperText={error.name.message}
-          />
-           <TextField
-            margin='dense'
-            id='lastName'
-            label='Sobrenome'
-            fullWidth
-            autoComplete='off'
-            value={customer.lastName}
-            onChange={(event) => setCustomer((prevCustomer) => ({
-              ...prevCustomer,
-              lastName: event.target.value,
-            }))}
-            required
-            error={error.lastName.open}
-            helperText={error.lastName.message}
-          />
-           <TextField
             margin='dense'
             id='mobilePhone'
             label='Celular'
@@ -162,7 +82,7 @@ function ModalConfirm({
             loading={loading}
             color='primary'
             titleButton='Confirmar'
-            onClick={onFinish}
+            onClick={onSearch}
           /> 
         </DialogActions>
       </Dialog>

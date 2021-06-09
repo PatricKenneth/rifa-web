@@ -23,7 +23,7 @@ function RegulationDescription() {
                 e 17 km da cidade de Missão Velha. Acesso asfalto e estrada vicinal.
             </Typography>
             <Typography variant='body2' style={{ lineHeight: '24px' }}>
-                O sorteio e Baseado pela Loteria Federal para eliminarmos quaisquer dúvida ou margem para fraude!! 
+                O sorteio é baseado pela Loteria Federal para eliminarmos quaisquer dúvida ou margem para fraude!! 
             </Typography>
             <Typography variant='h5' style={{ lineHeight: '24px', maxWidth: '505px', margin: '24px 0px' }}>
                 Não aceitamos depósitos por envelope ou Doc, somente transferência, pix e TED.

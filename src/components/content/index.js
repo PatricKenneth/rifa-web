@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Grid, Typography } from '@material-ui/core';
 import Number from '../number';
 import numbersService from '../../resources/services/numbersService';
-import ticketsService from '../../resources/services/ticketsService';
-import { getStatus } from '../../utils/getStatus';
+import { isReservedOrPaid, getStatus } from '../../utils/getStatus';
 import FloatingButton from '../floatingButton';
 import ModalConfirm from '../modalConfirm';
+import ModalSearch from '../modalSearch';
+import ModalPaid from '../modalPaid';
 import RegulationDescription from '../regulationDescription';
+import moment from 'moment';
+import ModalInfo from '../modalInfo';
+
+moment.locale('pt-br'); 
 
 function getQuantity(numbers, status = '') {
     if(status) {
@@ -16,9 +21,19 @@ function getQuantity(numbers, status = '') {
     }
 }
 
+function getTotalValueTicket(numbers) {
+    return parseFloat(numbers.map((element) => element.amount)
+    .reduce((total, amount) => total + amount))
+    .toLocaleString('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+        maximumFractionDigits: 2,
+    })
+}
+
 const CUSTOMER_INITIAL = {
     name: '',
-    lastname: '',
+    lastName: '',
     mobilePhone: '',
 }
 
@@ -29,9 +44,15 @@ function Content() {
     });
     const [selectedNumbers, setSelectedNumbers] = useState([]);
     const [query, setQuery] = useState('');
-    const [stateModal, setStateModal] = useState(false);
+    const [stateModal, setStateModal] = useState({
+        modalConfirm: false,
+        modalSearch: false,
+        modalPaid: false,
+        modalInfo: false,
+    });
     const [customer, setCustomer] = useState(CUSTOMER_INITIAL);
-
+    const [loading, setLoading] = useState(false);
+    
     async function getNumbers(){
         let response = await numbersService.get(query);
         let dataSource = response.data;
@@ -48,6 +69,11 @@ function Content() {
     }
     
     useEffect(() => {
+        let status = query === getStatus('Pago') ? 'Pago' : query;
+        status = query === getStatus('Reservado') ? 'Reservado' : query;
+        if(isReservedOrPaid(status)) {
+            setSelectedNumbers([]);
+        }
         getNumbers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query]);
@@ -65,21 +91,92 @@ function Content() {
         }
     }
 
+    async function onSearch() {
+        if(!loading){
+            setLoading(true);
+        }
+        if(customer.mobilePhone){
+            const { mobilePhone } = customer;
+            try {
+                const response = await numbersService.findBy({
+                    mobilePhone,
+                });
+                setNumbers((prevNumbers) => ({
+                    ...prevNumbers,
+                    filtered: [],
+                }));
+                setNumbers((prevNumbers) => ({
+                    ...prevNumbers,
+                    filtered: response.data,
+                }));
+                setCustomer(CUSTOMER_INITIAL);
+            } catch (error) {
+                console.log(error);
+            }
+            setStateModal((prevStateModal) => ({
+                ...prevStateModal,
+                modalSearch: false,
+            }));
+        }
+        setLoading(false);
+    }
+
     async function onFinish() {
+        if(!loading){
+            setLoading(true);
+        }
         let ticket = {
             numbers: selectedNumbers,
             ...customer,
+            status: getStatus('Reservado'),
         };
-        try {
-            const response = await ticketsService.create(ticket);
-            ticket = response.data;
-            setStateModal(false);
-            setCustomer(CUSTOMER_INITIAL);
-            setSelectedNumbers([]);
-            getNumbers();
-        } catch (error) {
-            console.log(error);
+        if(customer.name && customer.lastName && customer.mobilePhone){
+            try {
+                await numbersService.create(ticket);
+                setCustomer(CUSTOMER_INITIAL);
+                setSelectedNumbers([]);
+                getNumbers();
+            } catch (error) {
+                console.log(error);
+            }
+            setStateModal((prevStateModal) => ({
+                ...prevStateModal,
+                modalConfirm: false,
+            }));
         }
+        setLoading(false);
+    }
+
+    async function onPaid() {
+        setStateModal((prevStateModal) => ({
+            ...prevStateModal,
+            modalPaid: true,
+        }));
+
+        if(!loading){
+            setLoading(true);
+        }
+        let ticket = {
+            numbers: selectedNumbers,
+            ...customer,
+            status: getStatus('Aguardando Pagamento'),
+        };
+        if(customer.name && customer.lastName && customer.mobilePhone){
+            try {
+                await numbersService.create(ticket);
+                setCustomer(CUSTOMER_INITIAL);
+                setSelectedNumbers([]);
+                getNumbers();
+            } catch (error) {
+                console.log(error);
+            }
+            setStateModal((prevStateModal) => ({
+                ...prevStateModal,
+                modalPaid: false,
+                modalInfo: true,
+            }));
+        }
+        setLoading(false);
     }
 
     return (
@@ -139,13 +236,43 @@ function Content() {
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant='contained' style={{ margin: '16px', background: '#e6e641' }}>
+                    <Button 
+                        variant='contained' 
+                        style={{ margin: '16px', background: '#e6e641' }}
+                        onClick={() => 
+                            setStateModal((prevStateModal) => ({
+                                ...prevStateModal,
+                                modalSearch: true,
+                            }))
+                        }
+                    >
                         Consulte seu número
                     </Button>
                 </Grid>
                 <Grid item>
-                    <Button variant='outlined' color='secondary' style={{ margin: '16px' }}>
+                    <Button 
+                        variant='outlined' 
+                        color='secondary' 
+                        style={{ margin: '16px' }}
+                        onClick={onPaid}
+                        disabled={!(selectedNumbers.length > 0)}
+                    >
                         Clique para pagar
+                    </Button>
+                </Grid>
+                <Grid item>
+                    <Button 
+                        variant='contained' 
+                        color='secondary' 
+                        style={{ margin: '16px' }}
+                        onClick={() => 
+                            setStateModal((prevStateModal) => ({
+                                ...prevStateModal,
+                                modalInfo: true,
+                            }))
+                        }
+                    >
+                        Dados de pagamento
                     </Button>
                 </Grid>
             </Grid>
@@ -155,18 +282,88 @@ function Content() {
             <Grid item style={{ borderLeft: '1px solid white', paddingLeft: '8px', marginBottom: '24px' }}>
                 <RegulationDescription /> 
             </Grid>
-            {selectedNumbers.length > 0 && <FloatingButton onFinish={() => setStateModal(true)} />}
+            {selectedNumbers.length > 0 && 
+                <FloatingButton 
+                    onFinish={() => 
+                        setStateModal((prevStateModal) => ({
+                            ...prevStateModal,
+                            modalConfirm: true,
+                        }))
+                    } 
+                />
+            }
             <ModalConfirm 
-                title='Confirma número(s)'
-                content={`Números selecionados: ${
-                    selectedNumbers.map((element) => element.num).join(', ')}
-                `}
-                stateModal={stateModal} 
+                title='Confirmar número(s)'
+                content={[
+                    `Números selecionados: ${selectedNumbers.map((element) => element.num).join(', ')}`,
+                    `Valor por número: ${
+                        parseFloat(100).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            maximumFractionDigits: 2,
+                        })
+                    }`,
+                    `Quantidade de número escolhido: ${selectedNumbers.length}`,
+                    `Valor total do bilhete: ${selectedNumbers.length > 0 && getTotalValueTicket(selectedNumbers)}`,
+                    `Números reservados até: ${moment().add(10, 'days').format('DD/MM/YYYY')}`
+                ]}
+                stateModal={stateModal.modalConfirm} 
                 setStateModal={setStateModal} 
                 customer={customer}
                 setCustomer={setCustomer}
                 onFinish={onFinish}
-            />   
+                loading={loading}
+            />
+            <ModalPaid 
+                title='Confirmar pagamento'
+                content={[
+                    `Números selecionados: ${selectedNumbers.map((element) => element.num).join(', ')}`,
+                    `Valor por número: ${
+                        parseFloat(100).toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL',
+                            maximumFractionDigits: 2,
+                        })
+                    }`,
+                    `Quantidade de número escolhido: ${selectedNumbers.length}`,
+                    `Valor total do bilhete: ${selectedNumbers.length > 0 && getTotalValueTicket(selectedNumbers)}`,
+                    `Enviar comprovante de pagamento`
+                ]}
+                stateModal={stateModal.modalPaid} 
+                setStateModal={setStateModal} 
+                customer={customer}
+                setCustomer={setCustomer}
+                onFinish={onPaid}
+                loading={loading}
+            />
+            <ModalInfo
+                title='Informações de pagamento'
+                content={[
+                    `Pix 091.677.694.89`,
+                    `José Cláudio Vieira Santo`,
+                    `.`,
+                    `.`,
+                    `.`,
+                    `Agência. 0776`,
+                    `Op. 013`,
+                    `C. P. 9570-4`,
+                    `José Cláudio Vieira Santo`,
+                    `.`,
+                    `.`,
+                    `.`,
+                ]}
+                stateModal={stateModal.modalInfo} 
+                setStateModal={setStateModal} 
+            />
+            <ModalSearch
+                title='Buscar número(s)'
+                stateModal={stateModal.modalSearch} 
+                setStateModal={setStateModal} 
+                customer={customer}
+                setCustomer={setCustomer}
+                onSearch={onSearch}
+                loading={loading}
+            />
         </Grid>
     );
 }

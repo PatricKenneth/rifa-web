@@ -8,7 +8,7 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import LoadingButton from '../loadingButton';
 
-function ModalConfirm({ 
+function ModalPaid({ 
     stateModal, 
     setStateModal, 
     title, 
@@ -92,7 +92,7 @@ function ModalConfirm({
   const handleClose = () => {
     setStateModal((prevStateModal) => ({
       ...prevStateModal,
-      modalConfirm: false,
+      modalPaid: false,
     }));
   };
 
@@ -170,4 +170,4 @@ function ModalConfirm({
   );
 }
 
-export default ModalConfirm;
+export default ModalPaid;
