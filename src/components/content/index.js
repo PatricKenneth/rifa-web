@@ -295,7 +295,7 @@ function Content() {
             <ModalConfirm 
                 title='Confirmar número(s)'
                 content={[
-                    `Números selecionados: ${selectedNumbers.map((element) => element.num).join(', ')}`,
+                    `Números selecionados: ${selectedNumbers.map((element) => ('000' + element.num).slice(-3)).join(', ')}`,
                     `Valor por número: ${
                         parseFloat(100).toLocaleString('pt-BR', {
                             style: 'currency',
@@ -317,7 +317,7 @@ function Content() {
             <ModalPaid 
                 title='Confirmar pagamento'
                 content={[
-                    `Números selecionados: ${selectedNumbers.map((element) => element.num).join(', ')}`,
+                    `Números selecionados: ${selectedNumbers.map((element) => ('000' + element.num).slice(-3)).join(', ')}`,
                     `Valor por número: ${
                         parseFloat(100).toLocaleString('pt-BR', {
                             style: 'currency',

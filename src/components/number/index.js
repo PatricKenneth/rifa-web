@@ -53,7 +53,7 @@ function Number({ number, setNumber }){
                         color={colors[number.status]} 
                         style={{ margin: '8px' }}
                     >
-                        {number.num}
+                        {('000' + number.num).slice(-3)}
                     </Button>
         }
         if( getStatus(number.status) === getStatus('Aguardando Pagamento') ) {
@@ -68,7 +68,7 @@ function Number({ number, setNumber }){
                         onMouseEnter={handlePopoverOpen}
                         onMouseLeave={handlePopoverClose}
                     >
-                        {number.num}
+                        {('000' + number.num).slice(-3)}
                     </Button>
         }
         if(getStatus(number.status) === getStatus('Pago')) {
@@ -80,7 +80,7 @@ function Number({ number, setNumber }){
                         onMouseEnter={handlePopoverOpen}
                         onMouseLeave={handlePopoverClose}
                     >
-                        {number.num}
+                        {('000' + number.num).slice(-3)}
                     </Button>
         } else {
             return  <Button 
@@ -94,7 +94,7 @@ function Number({ number, setNumber }){
                         onMouseEnter={handlePopoverOpen}
                         onMouseLeave={handlePopoverClose}
                     >
-                        {number.num}
+                        {('000' + number.num).slice(-3)}
                     </Button>
         }
     }
