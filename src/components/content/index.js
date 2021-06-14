@@ -191,7 +191,7 @@ function Content() {
             </Grid>
             <Grid item style={{ borderBottom: '1px solid white', marginBottom: '40px', }}>
                 <Box style={{ display: 'flex', justifyContent: 'center', margin: '16px' }}>
-                    <img src='./logo192.png' alt='' style={{ width: '100%',  maxWidth: '400px', }} />
+                    <img src='./images/terrain.jpeg' alt='' style={{ width: '100%',  maxWidth: '400px', }} />
                 </Box>
             </Grid>
             <Grid item container justify='center' style={{ marginBottom: '24px' }}>
