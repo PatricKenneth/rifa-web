@@ -11,10 +11,10 @@ function RegulationDescription() {
                 Terreno próprio pra construção com tamanho 8mx30m no distrito de Missão 
             </Typography>
             <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold', marginBottom: '24px' }}>
-                Nova na cidade de Missão Velha ou se preferir o valor de R$ 4.000,00
+                Nova na cidade de Missão Velha ou se preferir o valor de R$ 7.000,00
             </Typography>
             <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold' }}>
-                Custos cartorial por conta do vencedor. Documentação Particular. Imóvel no zoneamento Rural,
+                Custos cartoriais por conta do vencedor. Documentação Particular. Imóvel no zoneamento Rural,
             </Typography>
             <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold' }}>
                 com água e energia próximo. Fica a 20km da cidade de Juazeiro do Norte, 17km da cidade de Barbalha 
