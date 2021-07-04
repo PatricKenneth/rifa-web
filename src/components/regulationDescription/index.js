@@ -29,7 +29,7 @@ function RegulationDescription() {
                 Não aceitamos depósitos por envelope ou Doc, somente transferência, pix e TED.
             </Typography>
             <Typography variant='body2' style={{ lineHeight: '24px' }}>
-                Caso não tenha interesse pelo terreno podemos viabilizar o pagamento em dinheiro, valor de R$ 4.000,00,
+                Caso não tenha interesse pelo terreno podemos viabilizar o pagamento em dinheiro, valor de R$ 7.000,00,
             </Typography> 
             <Typography variant='body2' style={{ lineHeight: '24px' }}>
                 pagamento em até 72 horas após o sorteio e mediante depósito bancário via TED ou PIX no nome do vencedor. 
