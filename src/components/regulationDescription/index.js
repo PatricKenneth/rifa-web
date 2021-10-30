@@ -5,7 +5,7 @@ function RegulationDescription() {
     return (
         <>
             <Typography variant='h5' style={{ lineHeight: '64px' }}>
-                    Regulamento/Descrição: Data do Sorteio : 30/10/2021
+                    Regulamento/Descrição: Data do Sorteio : A definir
             </Typography>
             <Typography variant='body2' style={{ lineHeight: '24px', fontWeight: 'bold' }}>
                 Terreno próprio pra construção com tamanho 8mx30m no distrito de Missão 
